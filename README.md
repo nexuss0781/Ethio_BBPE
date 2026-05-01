@@ -102,12 +102,39 @@ Ethio_BBPE/
 └── README.md               # This file
 ```
 
-## 🤗 Hugging Face Hub
+## 🤗 Hugging Face Hub Integration
 
-This model is designed to be pushed to the Hugging Face Hub:
+The trained tokenizer can be easily shared and loaded via the Hugging Face Hub.
+
+### Loading from Hub
+```python
+from tokenizers import Tokenizer
+
+# Load directly from the Hub
+tokenizer = Tokenizer.from_pretrained("Nexuss0781/Ethio-BBPE")
+
+# Encode text
+output = tokenizer.encode("ሰላም ልዑል እንዴት ነህ?")
+print(output.tokens)
+```
+
+### Uploading Your Own Trained Model
+If you have trained a custom version, you can upload it using the `huggingface_hub` library:
+
+```bash
+pip install huggingface_hub
+```
 
 ```python
-trainer.push_to_hub("Nexuss0781/Ethio-BBPE", token="YOUR_HF_TOKEN")
+from huggingface_hub import HfApi
+
+api = HfApi()
+api.upload_folder(
+    folder_path="./models/your_model_name",
+    repo_id="your-username/your-repo-name",
+    repo_type="model",
+    token="YOUR_HF_TOKEN"
+)
 ```
 
 ## 📄 License
