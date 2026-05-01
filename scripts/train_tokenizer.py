@@ -3,7 +3,7 @@
 Command-line interface for training BBPE tokenizers.
 
 Usage:
-    python train_tokenizer.py --data_dir ./data --vocab_size 30000 --model_name my_tokenizer
+    python train_tokenizer.py --data_dir ./data --vocab_size 30000 --model_name EthioBBPE
 """
 
 import argparse
@@ -13,7 +13,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from bbpe_trainer import BBPETrainer, BBPEConfig
+from bbpe_trainer import EthioBBPETrainer as BBPETrainer, BBPEConfig
 
 
 def parse_args():
@@ -100,7 +100,7 @@ def parse_args():
     parser.add_argument(
         "--model_name",
         type=str,
-        default="bbpe_tokenizer",
+        default="EthioBBPE",
         help="Name for the saved tokenizer model",
     )
     
@@ -117,6 +117,42 @@ def parse_args():
         type=str,
         default=None,
         help="Path to save the configuration JSON file",
+    )
+    
+    # Advanced production features
+    parser.add_argument(
+        "--use_checkpoint",
+        action="store_true",
+        default=True,
+        help="Enable checkpointing during training",
+    )
+    
+    parser.add_argument(
+        "--no_checkpoint",
+        action="store_false",
+        dest="use_checkpoint",
+        help="Disable checkpointing",
+    )
+    
+    parser.add_argument(
+        "--checkpoint_dir",
+        type=str,
+        default="./models/checkpoints",
+        help="Directory to save checkpoints",
+    )
+    
+    parser.add_argument(
+        "--save_compressed",
+        action="store_true",
+        default=True,
+        help="Save tokenizer files in compressed format (.gz)",
+    )
+    
+    parser.add_argument(
+        "--no_compression",
+        action="store_false",
+        dest="save_compressed",
+        help="Disable compression",
     )
     
     return parser.parse_args()
@@ -137,11 +173,13 @@ def main():
             min_frequency=args.min_frequency,
             special_tokens=args.special_tokens,
             lowercase=args.lowercase,
-            add_prefix_space=not args.no_prefix_space,
             show_progress=args.show_progress,
             data_dir=args.data_dir,
             model_save_dir=args.model_save_dir,
             model_name=args.model_name,
+            use_checkpoint=args.use_checkpoint,
+            checkpoint_dir=args.checkpoint_dir,
+            save_compressed=args.save_compressed,
         )
     
     # Save config if requested
@@ -180,7 +218,7 @@ def main():
     
     test_texts = [
         "Hello, world!",
-        "This is a test of the BBPE tokenizer.",
+        "This is a test of the EthioBBPE tokenizer.",
         "Special characters: @#$%^&*()",
         "Numbers: 12345 and words mixed together.",
     ]
@@ -198,6 +236,10 @@ def main():
     print("\n" + "="*60)
     print(f"Tokenizer training complete!")
     print(f"Model saved to: {save_path}")
+    if args.save_compressed:
+        print(f"Compressed files also saved (look for .gz files)")
+    if args.use_checkpoint:
+        print(f"Checkpoints saved to: {args.checkpoint_dir}")
     print("="*60)
 
 
