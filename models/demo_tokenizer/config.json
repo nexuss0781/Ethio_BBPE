@@ -1,0 +1,19 @@
+{
+  "vocab_size": 30000,
+  "min_frequency": 2,
+  "special_tokens": [
+    "<pad>",
+    "<unk>",
+    "<s>",
+    "</s>",
+    "<mask>"
+  ],
+  "lowercase": false,
+  "add_prefix_space": false,
+  "trim_offsets": true,
+  "show_progress": true,
+  "initial_alphabet": [],
+  "data_dir": "data",
+  "model_save_dir": "models",
+  "model_name": "demo_tokenizer"
+}

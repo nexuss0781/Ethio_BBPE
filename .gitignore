@@ -1,0 +1,54 @@
+```
+# Dependencies
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.local
+.env.*
+
+# Build and distribution artifacts
+dist/
+build/
+*.egg-info/
+
+# Editors
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python specific
+*.pyc
+__pycache__/
+.Python
+*.so
+*.egg
+*.manifest
+*.spec
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
+
+# Documentation
+docs/_build/
+```
