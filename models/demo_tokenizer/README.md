@@ -1,37 +1,29 @@
 ---
 language:
-  - am  # Amharic
-  - om  # Oromo
-  - ti  # Tigrinya
-  - so  # Somali
+  - code
 license: mit
 tags:
   - byte-level-bpe
   - tokenizer
-  - ethiopian-languages
-  - ge'ez-script
-  - amharic
-  - oromo
-  - tigrinya
-  - somali
+  - bbpe
+  - tokenizers
 pipeline_tag: token-classification
 library_name: tokenizers
-datasets:
-  - nexuss0781/ethio-corpus
+datasets: []
 metrics:
   - vocabulary-size
 ---
 
-# 🇪🇹 EthioBBPE: Byte-Level BPE Tokenizer for Ethiopian Languages
+# EthioBBPE: Byte-Level BPE Tokenizer
 
-This is a Byte-Level BPE (BBPE) tokenizer specifically trained for Ethiopian languages including Amharic, Oromo, Tigrinya, and Somali. It handles the complex Ge'ez script and Latin-based orthographies seamlessly.
+This is a Byte-Level BPE (BBPE) tokenizer trained using Hugging Face's `tokenizers` library. It handles diverse Unicode scripts and complex morphological structures seamlessly.
 
 ## Features
 
 - **Byte-Level Encoding**: Robust against unknown characters, ensuring no `<UNK>` tokens
-- **Optimized for Ethiopic Script**: Handles complex Ge'ez script characters efficiently
-- **Multi-language Support**: Works across Amharic, Oromo, Tigrinya, Somali, and more
+- **Universal Script Support**: Handles any Unicode character efficiently
 - **Hugging Face Compatible**: Directly usable with `transformers` models
+- **Efficient**: Fast encoding/decoding with optimized C++ backend
 
 ## Installation
 
@@ -50,7 +42,7 @@ from tokenizers import Tokenizer
 tokenizer = Tokenizer.from_pretrained("Nexuss0781/Ethio-BBPE")
 
 # Encode text
-text = "ሰላም ልዑል እንዴት ነህ? (Hello, how are you?)"
+text = "Hello world! This is a test."
 encoded = tokenizer.encode(text)
 
 print(f"Token IDs: {encoded.ids}")
@@ -70,48 +62,16 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained("Nexuss0781/Ethio-BBPE", use_fast=True)
 
 # Tokenize
-inputs = tokenizer("የኢትዮጵያ ህዝብ በጣም ብዙ ነው።")
+inputs = tokenizer("The quick brown fox jumps over the lazy dog.")
 print(inputs)
 ```
 
 ## Training Details
 
 - **Model Type**: Byte-Level BPE
-- **Vocabulary Size**: 32,000 tokens
+- **Vocabulary Size**: 30,000 tokens
 - **Minimum Frequency**: 2
 - **Special Tokens**: `[PAD]`, `[UNK]`, `[CLS]`, `[SEP]`, `[MASK]`
-- **Training Data**: Ethiopian language corpora (Amharic, Oromo, Tigrinya, Somali)
-
-## Supported Languages
-
-| Language | Code | Script |
-|----------|------|--------|
-| Amharic | am | Ge'ez (Ethiopic) |
-| Oromo | om | Latin |
-| Tigrinya | ti | Ge'ez (Ethiopic) |
-| Somali | so | Latin |
-| Afar | aa | Latin |
-| Sidamo | sid | Latin |
-
-## Examples
-
-### Amharic (Ge'ez Script)
-```python
-text = "ኢትዮጵያ በአፍሪካ ቀንድ የምትገኝ ሀገር ናት።"
-tokens = tokenizer.encode(text).tokens
-```
-
-### Oromo (Latin Script)
-```python
-text = "Itoophiyaan biyya gaafa afriikaa argamtuudha."
-tokens = tokenizer.encode(text).tokens
-```
-
-### Mixed Language
-```python
-text = "ሰላም! Hello! Akkam! How are you?"
-tokens = tokenizer.encode(text).tokens
-```
 
 ## Repository Structure
 
@@ -121,7 +81,3 @@ The full training codebase is available at:
 ## License
 
 MIT License
-
-## Acknowledgments
-
-Built for the Ethiopian NLP community to foster better language understanding and generation capabilities.

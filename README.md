@@ -1,11 +1,10 @@
-# 🇪🇹 EthioBBPE: Byte-Level BPE Tokenizer for Ethiopian Languages
+# EthioBBPE
 
-A robust, production-ready Byte-Level BPE (BBPE) tokenizer training framework specifically optimized for Ethiopian languages (Amharic, Oromo, Tigrinya, Somali, etc.) using Hugging Face's `tokenizers` library.
+A robust, production-ready Byte-Level BPE (BBPE) tokenizer training environment built with Hugging Face's `tokenizers` library. EthioBBPE provides a flexible framework for training high-quality tokenizers on any text corpus, optimized for handling diverse Unicode scripts and complex morphological structures.
 
 ## ✨ Features
 
-- **Optimized for Ethiopic Script**: Handles complex Ge'ez script characters and Latin-based orthographies seamlessly.
-- **Byte-Level Encoding**: Robust against unknown characters and emojis, ensuring no `<UNK>` tokens.
+- **Byte-Level Encoding**: Handles any Unicode character seamlessly, eliminating unknown token (`<unk>`) issues.
 - **End-to-End Pipeline**: From raw text corpus to a ready-to-use `tokenizer.json`.
 - **Hugging Face Compatible**: Directly usable with `transformers` models.
 - **Flexible Configuration**: Customize vocabulary size, minimum frequency, and special tokens.
@@ -23,9 +22,9 @@ pip install -r requirements.txt
 Place your training corpus (raw text files) in the `data/` directory.
 ```text
 data/
-├── amharic_corpus.txt
-├── oromo_corpus.txt
-└── mixed_ethio_text.txt
+├── corpus_1.txt
+├── corpus_2.txt
+└── corpus_3.txt
 ```
 
 ### 2. Train the Tokenizer
@@ -44,7 +43,7 @@ python scripts/train_tokenizer.py \
 ```python
 from scripts.bbpe_trainer import BBPETrainer, BBPEConfig
 
-# Configure for Ethiopian Languages
+# Configure
 config = BBPEConfig(
     vocab_size=32000,
     min_frequency=2,
@@ -57,7 +56,7 @@ trainer.train_from_directory("./data")
 trainer.save("./models/EthioBBPE")
 
 # Test it
-text = "ሰላም ልጄ እንዴት ነሽ? (Hello daughter, how are you?)"
+text = "Hello world! This is a test."
 tokens = trainer.tokenize(text)
 print(f"Tokens: {tokens}")
 ```
@@ -71,7 +70,7 @@ from tokenizers import Tokenizer
 tokenizer = Tokenizer.from_file("models/EthioBBPE/tokenizer.json")
 
 # Encode
-encoded = tokenizer.encode("የኢትዮጵያ ህዝብ")
+encoded = tokenizer.encode("Hello world this is a test")
 print(encoded.ids)
 print(encoded.tokens)
 
@@ -84,7 +83,7 @@ print(decoded)
 
 The `EthioBBPE` architecture follows these steps:
 1. **Pre-tokenization**: Splits text into words while preserving byte-level integrity.
-2. **Byte Conversion**: Converts all characters (including Ge'ez script) into their byte representations.
+2. **Byte Conversion**: Converts all characters into their byte representations.
 3. **BPE Training**: Learns merge operations based on frequency in the corpus.
 4. **Vocabulary Creation**: Generates a fixed-size vocabulary of byte-level tokens.
 
@@ -114,7 +113,7 @@ from tokenizers import Tokenizer
 tokenizer = Tokenizer.from_pretrained("Nexuss0781/Ethio-BBPE")
 
 # Encode text
-output = tokenizer.encode("ሰላም ልዑል እንዴት ነህ?")
+output = tokenizer.encode("Hello world this is a test")
 print(output.tokens)
 ```
 
@@ -140,7 +139,3 @@ api.upload_folder(
 ## 📄 License
 
 MIT License
-
-## 🙏 Acknowledgments
-
-Built for the Ethiopian NLP community to foster better language understanding and generation capabilities.
