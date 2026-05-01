@@ -1,8 +1,54 @@
 {
-  "total_characters": 418,
-  "total_tokens": 134,
-  "avg_chars_per_token": 3.12,
-  "perfect_reconstruction": true,
-  "vocab_size": 32000,
-  "test_samples": 4
+  "model_info": {
+    "name": "EthioBBPE",
+    "version": "1.0.0",
+    "type": "Byte-level BPE",
+    "library": "tokenizers"
+  },
+  "training_data": {
+    "datasets": [
+      {
+        "name": "Synaxarium Dataset",
+        "source": "Nexuss0781/synaxarium",
+        "file": "synaxarium_dataset.parquet",
+        "num_texts": 366
+      },
+      {
+        "name": "Canon Biblical Amharic-English",
+        "source": "Nexuss0781/conon-biblical-am-en",
+        "file": "canon_biblical_am_en.parquet",
+        "num_texts": 61403
+      }
+    ],
+    "total_files_processed": 2,
+    "combined_corpus_size_mb": 15.43,
+    "total_lines": 61769
+  },
+  "training_config": {
+    "vocab_size": 16000,
+    "min_frequency": 2,
+    "special_tokens": [
+      "<pad>",
+      "<unk>",
+      "<s>",
+      "</s>",
+      "<mask>"
+    ],
+    "lowercase": false,
+    "compression": "gzip (level 9)",
+    "checkpointing": true
+  },
+  "performance_metrics": {
+    "perfect_reconstruction": true,
+    "test_samples": 3,
+    "amharic_geez_punctuation": "✅ Perfect",
+    "synaxarium_text": "✅ Perfect (66 tokens)",
+    "biblical_text": "✅ Perfect (82 tokens)",
+    "compression_ratio": "89.8% (1.3MB -> 136KB)"
+  },
+  "training_timestamp": "2026-05-01T23:41:22.748426",
+  "hardware": {
+    "cpu_cores": "auto-detected",
+    "training_time_seconds": 16.5
+  }
 }
