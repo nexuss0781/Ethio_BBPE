@@ -179,14 +179,43 @@ api.upload_folder(
 )
 ```
 
-## 📊 Training Statistics
+## 📊 Training Statistics & Metrics
 
-Example training on biblical and synaxarium datasets:
-- **Training samples**: 61,576 texts
-- **Total characters**: 6,789,143
-- **Vocabulary size**: 30,000
-- **Training time**: ~20 seconds
-- **Storage saved**: ~2.3 MB with compression
+### Final Model Performance
+
+**Training Configuration:**
+- **Vocabulary Size**: 32,000
+- **Minimum Frequency**: 2
+- **Special Tokens**: [PAD], [UNK], [CLS], [SEP], [MASK]
+- **Checkpointing**: Enabled
+- **Compression**: Enabled (Gzip)
+
+**Dataset:**
+- **Sources**: Synaxarium + Biblical Amharic-English datasets
+- **Training Samples**: 61,576 texts
+- **Total Characters**: 6,789,143
+
+**Test Results (Amharic Text):**
+| Test Sample | Input Length | Tokens Generated | Perfect Reconstruction |
+|-------------|--------------|------------------|------------------------|
+| Special chars (፠፠፠...) | 18 | 1 | ✅ YES |
+| Classical text | 124 | 58 | ✅ YES |
+| Mixed content | 35 | 7 | ✅ YES |
+| Long paragraph | 241 | 68 | ✅ YES |
+
+**Overall Metrics:**
+- **Total Characters Tested**: 418
+- **Total Tokens Generated**: 134
+- **Average Characters per Token**: 3.12
+- **Perfect Reconstruction Rate**: 100% ✅
+
+**Storage Efficiency:**
+- **Uncompressed Vocab**: ~3.8 MB
+- **Compressed Vocab (.gz)**: ~1.5 MB
+- **Space Saved**: ~60%
+
+### Training Log
+See `training_log.txt` for detailed training output. Metrics saved in `models/EthioBBPE/training_metrics.json`.
 
 ## 📄 License
 

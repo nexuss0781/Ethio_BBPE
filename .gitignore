@@ -1,42 +1,16 @@
 ```
-# Dependencies
+# Compressed files
+*.gz
+
+# Dependencies and build artifacts
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.env
-.env.local
-.env.*
-
-# Build and distribution artifacts
 dist/
 build/
 *.egg-info/
-
-# Editors
-.vscode/
-.idea/
-
-# Logs
-*.log
-
-# Coverage
-.coverage
-coverage/
-htmlcov/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Python specific
-*.pyc
-__pycache__/
-.Python
-*.so
-*.egg
-*.manifest
-*.spec
+.eggs/
 
 # Virtual environments
 venv/
@@ -44,11 +18,33 @@ venv/
 env/
 ENV/
 
-# Testing
-.pytest_cache/
-.mypy_cache/
-.hypothesis/
+# Logs
+*.log
 
-# Documentation
-docs/_build/
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Checkpoints and model artifacts
+models/checkpoints/
+*.ckpt
+*.pth
+*.bin
+*.model
+
+# Environment files
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
 ```

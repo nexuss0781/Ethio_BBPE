@@ -145,6 +145,8 @@ class EthioBBPETrainer:
 
         # Train
         logger.info("Starting training...")
+        
+        # ByteLevelBPETokenizer.train() accepts parameters directly, not a trainer object
         self.tokenizer.train(
             files=file_paths,
             vocab_size=self.config.vocab_size,
