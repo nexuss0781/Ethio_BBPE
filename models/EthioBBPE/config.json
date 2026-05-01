@@ -1,13 +1,13 @@
 {
-  "vocab_size": 32000,
+  "vocab_size": 16000,
   "min_frequency": 2,
   "show_progress": true,
   "special_tokens": [
-    "[PAD]",
-    "[UNK]",
-    "[CLS]",
-    "[SEP]",
-    "[MASK]"
+    "<pad>",
+    "<unk>",
+    "<s>",
+    "</s>",
+    "<mask>"
   ],
   "lowercase": false,
   "dropout": null,
