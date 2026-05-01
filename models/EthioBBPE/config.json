@@ -1,0 +1,22 @@
+{
+  "vocab_size": 30000,
+  "min_frequency": 2,
+  "show_progress": true,
+  "special_tokens": [
+    "<pad>",
+    "<unk>",
+    "<s>",
+    "</s>",
+    "<mask>"
+  ],
+  "lowercase": false,
+  "dropout": null,
+  "data_dir": "./data",
+  "model_save_dir": "models",
+  "model_name": "EthioBBPE",
+  "use_checkpoint": false,
+  "checkpoint_dir": "./models/checkpoints",
+  "save_compressed": true,
+  "checkpoint_steps": null,
+  "num_threads": -1
+}

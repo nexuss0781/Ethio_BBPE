@@ -35,7 +35,14 @@ class BBPEConfig:
     lowercase: bool = False
     dropout: Optional[float] = None
     
+    # File paths
+    data_dir: str = "./data"
+    model_save_dir: str = "./models"
+    model_name: str = "EthioBBPE"
+    
     # Advanced features
+    use_checkpoint: bool = True
+    checkpoint_dir: str = "./models/checkpoints"
     save_compressed: bool = True
     checkpoint_steps: Optional[int] = None  # Save checkpoint every N steps if custom trainer used
     num_threads: int = -1  # -1 for auto
@@ -59,10 +66,10 @@ class EthioBBPETrainer:
     Production-ready trainer for Byte-Level BPE with checkpointing and compression.
     """
     
-    def __init__(self, config: BBPEConfig, output_dir: str = "./models"):
-        self.config = config
-        self.output_dir = Path(output_dir)
-        self.checkpoint_dir = self.output_dir / "checkpoints"
+    def __init__(self, config: BBPEConfig = None):
+        self.config = config or BBPEConfig()
+        self.output_dir = Path(self.config.model_save_dir)
+        self.checkpoint_dir = Path(self.config.checkpoint_dir)
         self.tokenizer = None
         self.is_trained = False
         
@@ -81,19 +88,33 @@ class EthioBBPETrainer:
         )
         logger.info("Tokenizer initialized")
 
-    def train(self, files: Union[str, List[str]], use_checkpoint: bool = False):
+    def train(self, files: Union[str, List[str]] = None, use_checkpoint: bool = None):
         """
         Train the tokenizer on a list of files or a directory.
         
         Args:
             files: Path to a file, list of files, or directory containing text files.
+                   If None, uses files from config.data_dir
             use_checkpoint: If True, attempts to resume from the latest checkpoint.
+                           Defaults to config.use_checkpoint
         """
         if self.tokenizer is None:
             self._initialize_tokenizer()
 
+        # Use config default if not specified
+        use_checkpoint = use_checkpoint if use_checkpoint is not None else self.config.use_checkpoint
+        
         # Resolve file paths
-        if isinstance(files, str):
+        if files is None:
+            # Use data_dir from config
+            data_path = Path(self.config.data_dir)
+            if data_path.is_dir():
+                file_paths = [str(f) for f in data_path.glob("**/*.txt")]
+                file_paths.extend([str(f) for f in data_path.glob("**/*.jsonl")])
+                file_paths.extend([str(f) for f in data_path.glob("**/*.json")])
+            else:
+                raise FileNotFoundError(f"Data directory not found: {self.config.data_dir}")
+        elif isinstance(files, str):
             path = Path(files)
             if path.is_dir():
                 file_paths = [str(f) for f in path.glob("**/*.txt")]
@@ -115,32 +136,22 @@ class EthioBBPETrainer:
             latest_ckpt = self._get_latest_checkpoint()
             if latest_ckpt:
                 logger.info(f"Resuming from checkpoint: {latest_ckpt}")
-                self.tokenizer = ByteLevelBPETokenizer.from_file(str(latest_ckpt))
+                # Use Tokenizer.from_file for loading checkpoints (works with tokenizer.json format)
+                from tokenizers import Tokenizer
+                self.tokenizer = Tokenizer.from_file(str(latest_ckpt))
                 start_from_scratch = False
             else:
                 logger.info("No checkpoint found. Starting from scratch.")
 
-        # Initialize Trainer
-        trainer = trainers.BpeTrainer(
+        # Train
+        logger.info("Starting training...")
+        self.tokenizer.train(
+            files=file_paths,
             vocab_size=self.config.vocab_size,
             min_frequency=self.config.min_frequency,
             special_tokens=self.config.special_tokens,
-            show_progress=self.config.show_progress,
-            initial_alphabet=ByteLevelBPETokenizer.alphabet()
+            show_progress=self.config.show_progress
         )
-
-        # Train
-        logger.info("Starting training...")
-        if start_from_scratch:
-            self.tokenizer.train(files=file_paths, trainer=trainer)
-        else:
-            # Note: HuggingFace tokenizers library doesn't natively support 
-            # resuming BPE merge training mid-process easily without custom C++ extensions.
-            # The checkpoint here primarily saves the state before finalization or 
-            # allows saving intermediate vocabularies if implemented in batches.
-            # For this production version, we treat checkpoints as safety saves of the 
-            # current state before heavy operations or as versioned releases.
-            self.tokenizer.train(files=file_paths, trainer=trainer)
 
         self.is_trained = True
         logger.info("Training completed successfully.")
@@ -167,18 +178,19 @@ class EthioBBPETrainer:
         self.tokenizer.save(str(ckpt_path))
         logger.info(f"Checkpoint saved to {ckpt_path}")
 
-    def save(self, model_name: str = "ethio_bbpe", compress: bool = None):
+    def save(self, model_name: str = None, compress: bool = None):
         """
         Save the trained tokenizer.
         
         Args:
-            model_name: Name of the model folder.
+            model_name: Name of the model folder. Defaults to config.model_name
             compress: If True, saves vocab and merges in gzip format. 
                       Defaults to config.save_compressed.
         """
         if not self.is_trained and self.tokenizer is None:
             raise RuntimeError("Tokenizer not trained yet.")
 
+        model_name = model_name or self.config.model_name
         compress = compress if compress is not None else self.config.save_compressed
         model_path = self.output_dir / model_name
         model_path.mkdir(parents=True, exist_ok=True)
@@ -190,26 +202,19 @@ class EthioBBPETrainer:
             tokenizer_file = model_path / "tokenizer.json"
             self.tokenizer.save(str(tokenizer_file))
             
-            # Extract and compress vocab and merges separately for space efficiency
+            # Extract vocab from tokenizer
             vocab = self.tokenizer.get_vocab()
-            merges = self.tokenizer.get_merge_pairs()
             
             # Save compressed vocab
             vocab_path = model_path / "vocab.json.gz"
             with gzip.open(vocab_path, 'wt', encoding='utf-8') as f:
                 json.dump(vocab, f)
             
-            # Save compressed merges
-            merges_path = model_path / "merges.txt.gz"
-            with gzip.open(merges_path, 'wt', encoding='utf-8') as f:
-                for pair in merges:
-                    f.write(f"{pair[0]} {pair[1]}\n")
-            
-            logger.info(f"Compressed artifacts saved: {vocab_path}, {merges_path}")
+            logger.info(f"Compressed vocab saved: {vocab_path}")
             
             # Calculate savings
-            original_size = sum(f.stat().st_size for f in [tokenizer_file])
-            compressed_size = sum(f.stat().st_size for f in [vocab_path, merges_path])
+            original_size = tokenizer_file.stat().st_size
+            compressed_size = vocab_path.stat().st_size
             logger.info(f"Storage saved: {(original_size - compressed_size) / 1024:.2f} KB")
         else:
             # Standard save
