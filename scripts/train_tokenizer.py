@@ -13,7 +13,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from bbpe_trainer import EthioBBPETrainer as BBPETrainer, BBPEConfig
+from bbpe_trainer import EthioBBPETrainer, BBPEConfig
 
 
 def parse_args():
@@ -188,7 +188,7 @@ def main():
         print(f"Configuration saved to {args.save_config}")
     
     # Initialize trainer
-    trainer = BBPETrainer(config)
+    trainer = EthioBBPETrainer(config)
     
     # Get training files
     if args.files:

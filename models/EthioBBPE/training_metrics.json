@@ -1,0 +1,8 @@
+{
+  "total_characters": 418,
+  "total_tokens": 134,
+  "avg_chars_per_token": 3.12,
+  "perfect_reconstruction": true,
+  "vocab_size": 32000,
+  "test_samples": 4
+}
