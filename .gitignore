@@ -1,6 +1,6 @@
-```
-# Compressed files
+# Compressed files (except model vocab files)
 *.gz
+!models/*/vocab.json.gz
 
 # Dependencies and build artifacts
 __pycache__/
@@ -20,18 +20,24 @@ ENV/
 
 # Logs
 *.log
+training_log.txt
 
 # Temporary files
 *.tmp
 *.temp
 *~
 
-# Checkpoints and model artifacts
+# Checkpoints and model artifacts (keep only final models, not intermediate checkpoints)
 models/checkpoints/
 *.ckpt
 *.pth
 *.bin
 *.model
+
+# Data files (large datasets should not be in repo)
+data/*.parquet
+data/training_corpus.txt
+data/sample_corpus.txt
 
 # Environment files
 .env
@@ -47,4 +53,3 @@ models/checkpoints/
 # OS generated files
 .DS_Store
 Thumbs.db
-```
