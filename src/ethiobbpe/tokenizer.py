@@ -2,22 +2,32 @@
 Core tokenizer implementation for EthioBBPE.
 
 Provides a clean, professional API for tokenizing Amharic and Ge'ez texts.
+Enterprise-grade tokenizer with support for biblical texts and ancient scripts.
 """
+
+from __future__ import annotations
 
 import json
 import gzip
 from pathlib import Path
-from typing import List, Optional, Union, Dict, Any
+from typing import List, Optional, Union, Dict, Any, TYPE_CHECKING
 from functools import lru_cache
+from dataclasses import dataclass, field
+
+if TYPE_CHECKING:
+    from tokenizers import Tokenizer as HFTokenizer
+    from tokenizers import Encoding as HFEncoding
 
 try:
-    from tokenizers import Tokenizer as HFTokenizer
-    from tokenizers.models import BPE
-    from tokenizers.trainers import BpeTrainer
-    from tokenizers.pre_tokenizers import Whitespace
-    HAS_TOKENIZERS = True
-except ImportError:
-    HAS_TOKENIZERS = False
+    from tokenizers import Tokenizer as HFTokenizer  # pragma: no cover
+    from tokenizers.models import BPE  # pragma: no cover
+    from tokenizers.trainers import BpeTrainer  # pragma: no cover
+    from tokenizers.pre_tokenizers import Whitespace  # pragma: no cover
+    from tokenizers import Encoding as HFEncoding  # pragma: no cover
+    HAS_TOKENIZERS = True  # pragma: no cover
+except ImportError:  # pragma: no cover
+    HAS_TOKENIZERS = False  # pragma: no cover
+    HFEncoding = Any  # type: ignore  # pragma: no cover
 
 from huggingface_hub import hf_hub_download
 
@@ -93,7 +103,7 @@ class EthioBBPETokenizer:
                 force_download=force_download
             )
             
-            if not HAS_TOKENIZERS:
+            if not HAS_TOKENIZERS:  # pragma: no cover
                 raise ImportError(
                     "tokenizers library required. Install with: pip install tokenizers"
                 )
@@ -109,6 +119,8 @@ class EthioBBPETokenizer:
                 )
                 with open(config_path, 'r', encoding='utf-8') as f:
                     config = json.load(f)
+                # Ensure model_name is set correctly in config
+                config["model_name"] = model_id
             except Exception:
                 config = {"vocab_size": cls.DEFAULT_VOCAB_SIZE, "model_name": model_id}
             
@@ -135,7 +147,7 @@ class EthioBBPETokenizer:
         if not file_path.exists():
             raise FileNotFoundError(f"Tokenizer file not found: {file_path}")
         
-        if not HAS_TOKENIZERS:
+        if not HAS_TOKENIZERS:  # pragma: no cover
             raise ImportError(
                 "tokenizers library required. Install with: pip install tokenizers"
             )
@@ -162,7 +174,7 @@ class EthioBBPETokenizer:
         add_special_tokens: bool = True,
         truncation: bool = False,
         max_length: Optional[int] = None
-    ) -> "Encoding":
+    ) -> Encoding:
         """
         Encode a single text into tokens.
         
@@ -174,40 +186,26 @@ class EthioBBPETokenizer:
             
         Returns:
             Encoding object with ids, tokens, and attention mask
+
+        Raises:
+            RuntimeError: If encoding fails
         """
-        # Configure tokenizer for truncation if needed
-        if truncation and max_length:
-            self._tokenizer.truncation = {
-                "direction": "Right",
-                "max_length": max_length,
-                "strategy": "LongestFirst",
-                "stride": 0
-            }
-        
-        encoding = self._tokenizer.encode(
-            text,
-            add_special_tokens=add_special_tokens
-        )
-        
-        # Apply manual truncation if needed
-        if truncation and max_length:
-            encoding_ids = encoding.ids[:max_length]
-            encoding_tokens = encoding.tokens[:max_length]
-            encoding_attention = encoding.attention_mask[:max_length]
+        try:
+            # Configure truncation if requested using the tokenizer's API
+            if truncation and max_length is not None:
+                self._tokenizer.enable_truncation(max_length=max_length)
+            elif not truncation and max_length is not None:
+                # Disable truncation if not requested (only when max_length was previously set)
+                try:
+                    self._tokenizer.no_truncation()
+                except Exception:
+                    pass  # Ignore if already disabled
             
-            # Create a simple wrapper for truncated results
-            class TruncatedEncoding:
-                def __init__(self, ids, tokens, attention_mask):
-                    self.ids = ids
-                    self.tokens = tokens
-                    self.attention_mask = attention_mask
-                    self.type_ids = [0] * len(ids)
-                    self.offsets = [(0, 0)] * len(ids)
-                    self.special_tokens_mask = [1 if i in [0, len(ids)-1] else 0 for i in range(len(ids))]
+            encoding = self._tokenizer.encode(text, add_special_tokens=add_special_tokens)
             
-            return Encoding(TruncatedEncoding(encoding_ids, encoding_tokens, encoding_attention))
-        
-        return Encoding(encoding)
+            return Encoding(encoding)
+        except Exception as e:
+            raise RuntimeError(f"Failed to encode text: {str(e)}") from e
     
     def encode_batch(
         self, 
@@ -215,7 +213,7 @@ class EthioBBPETokenizer:
         add_special_tokens: bool = True,
         truncation: bool = False,
         max_length: Optional[int] = None
-    ) -> List["Encoding"]:
+    ) -> List[Encoding]:
         """
         Encode a batch of texts.
         
@@ -227,18 +225,29 @@ class EthioBBPETokenizer:
             
         Returns:
             List of Encoding objects
+
+        Raises:
+            RuntimeError: If batch encoding fails
         """
-        encodings = self._tokenizer.encode_batch(
-            texts,
-            add_special_tokens=add_special_tokens,
-            truncation=truncation,
-            max_length=max_length or 512
-        )
-        return [Encoding(enc) for enc in encodings]
+        try:
+            # Configure truncation if requested using the tokenizer's API
+            if truncation and max_length is not None:
+                self._tokenizer.enable_truncation(max_length=max_length)
+            elif not truncation and max_length is not None:
+                # Disable truncation if not requested (only when max_length was previously set)
+                try:
+                    self._tokenizer.no_truncation()
+                except Exception:
+                    pass  # Ignore if already disabled
+            
+            encodings = self._tokenizer.encode_batch(texts, add_special_tokens=add_special_tokens)
+            return [Encoding(enc) for enc in encodings]
+        except Exception as e:
+            raise RuntimeError(f"Failed to encode batch: {str(e)}") from e
     
     def decode(
         self, 
-        ids: Union[List[int], "Encoding"],
+        ids: Union[List[int], Encoding],
         skip_special_tokens: bool = True
     ) -> str:
         """
@@ -250,15 +259,21 @@ class EthioBBPETokenizer:
             
         Returns:
             Decoded text string
+
+        Raises:
+            RuntimeError: If decoding fails
         """
-        if hasattr(ids, 'ids'):
-            ids = ids.ids
-        
-        return self._tokenizer.decode(ids, skip_special_tokens=skip_special_tokens)
+        try:
+            if hasattr(ids, 'ids'):
+                ids = ids.ids
+            
+            return self._tokenizer.decode(ids, skip_special_tokens=skip_special_tokens)
+        except Exception as e:
+            raise RuntimeError(f"Failed to decode: {str(e)}") from e
     
     def decode_batch(
         self, 
-        batch_ids: List[Union[List[int], "Encoding"]],
+        batch_ids: List[Union[List[int], Encoding]],
         skip_special_tokens: bool = True
     ) -> List[str]:
         """
@@ -270,15 +285,21 @@ class EthioBBPETokenizer:
             
         Returns:
             List of decoded text strings
+
+        Raises:
+            RuntimeError: If batch decoding fails
         """
-        ids_list = []
-        for ids in batch_ids:
-            if hasattr(ids, 'ids'):
-                ids_list.append(ids.ids)
-            else:
-                ids_list.append(ids)
-        
-        return self._tokenizer.decode_batch(ids_list, skip_special_tokens=skip_special_tokens)
+        try:
+            ids_list = []
+            for ids in batch_ids:
+                if hasattr(ids, 'ids'):
+                    ids_list.append(ids.ids)
+                else:
+                    ids_list.append(ids)
+            
+            return self._tokenizer.decode_batch(ids_list, skip_special_tokens=skip_special_tokens)
+        except Exception as e:
+            raise RuntimeError(f"Failed to decode batch: {str(e)}") from e
     
     def get_vocab(self) -> Dict[str, int]:
         """Get the vocabulary as a dictionary."""
@@ -294,8 +315,14 @@ class EthioBBPETokenizer:
         
         Args:
             path: Output file path
+
+        Raises:
+            RuntimeError: If saving fails
         """
-        self._tokenizer.save(str(path))
+        try:
+            self._tokenizer.save(str(path))
+        except Exception as e:
+            raise RuntimeError(f"Failed to save tokenizer: {str(e)}") from e
     
     def __call__(
         self, 
@@ -303,7 +330,7 @@ class EthioBBPETokenizer:
         add_special_tokens: bool = True,
         truncation: bool = False,
         max_length: Optional[int] = None
-    ) -> Union["Encoding", List["Encoding"]]:
+    ) -> Union[Encoding, List[Encoding]]:
         """
         Tokenize text(s) - callable interface.
         
@@ -323,9 +350,20 @@ class EthioBBPETokenizer:
 
 
 class Encoding:
-    """Wrapper for encoding results with convenient properties."""
+    """
+    Wrapper for encoding results with convenient properties.
+    
+    Provides a consistent interface for accessing tokenization results
+    including token IDs, tokens, attention masks, and offsets.
+    """
     
     def __init__(self, encoding_obj: Any):
+        """
+        Initialize Encoding wrapper.
+        
+        Args:
+            encoding_obj: Underlying encoding object from tokenizers library
+        """
         self._encoding = encoding_obj
     
     @property
@@ -359,10 +397,34 @@ class Encoding:
         return self._encoding.special_tokens_mask
     
     def __len__(self) -> int:
+        """Return the number of tokens."""
         return len(self.ids)
     
     def __repr__(self) -> str:
+        """Return string representation."""
         return f"Encoding(num_tokens={len(self.ids)}, num_special_tokens={sum(self.special_tokens_mask)})"
+    
+    def __eq__(self, other: object) -> bool:
+        """Check equality with another Encoding object."""
+        if not isinstance(other, Encoding):
+            return NotImplemented
+        return self.ids == other.ids and self.tokens == other.tokens
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert encoding to a dictionary.
+        
+        Returns:
+            Dictionary with all encoding properties
+        """
+        return {
+            "ids": self.ids,
+            "tokens": self.tokens,
+            "attention_mask": self.attention_mask,
+            "type_ids": self.type_ids,
+            "offsets": self.offsets,
+            "special_tokens_mask": self.special_tokens_mask,
+        }
 
 
 class AutoTokenizer:

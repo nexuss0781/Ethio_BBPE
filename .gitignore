@@ -1,45 +1,23 @@
-# Compressed files (except model vocab files)
-*.gz
-!models/*/vocab.json.gz
-
-# Dependencies and build artifacts
+```
+# Dependencies
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-dist/
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Build/dist
 build/
+dist/
 *.egg-info/
-.eggs/
 
 # Virtual environments
 venv/
 .venv/
-env/
-ENV/
-
-# Logs
-*.log
-training_log.txt
-
-# Temporary files
-*.tmp
-*.temp
-*~
-
-# Checkpoints and model artifacts (keep only final models, not intermediate checkpoints)
-models/checkpoints/
-*.ckpt
-*.pth
-*.bin
-*.model
-
-# Data files (large datasets should not be in repo)
-data/*.parquet
-data/training_corpus.txt
-data/sample_corpus.txt
-
-# Environment files
 .env
 .env.local
 *.env.*
@@ -49,7 +27,12 @@ data/sample_corpus.txt
 .idea/
 *.swp
 *.swo
+*.tmp
 
-# OS generated files
+# Logs
+*.log
+
+# OS
 .DS_Store
 Thumbs.db
+```

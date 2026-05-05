@@ -1,1 +1,15 @@
-tokenizers>=0.15.0
+# Core dependencies for EthioBBPE
+# Install with: pip install -r requirements.txt
+
+# Tokenization library (Hugging Face)
+tokenizers>=0.20.0,<0.22
+
+# Hugging Face Hub for model downloading
+huggingface-hub>=0.25.0,<1.0
+
+# Optional development dependencies (uncomment as needed)
+# pytest>=8.0.0
+# pytest-cov>=5.0.0
+# black>=24.0.0
+# isort>=5.13.0
+# mypy>=1.10.0
