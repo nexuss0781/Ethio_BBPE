@@ -20,9 +20,15 @@
 - 🤖 **Auto-download**: Models automatically downloaded from Hugging Face Hub
 - 📦 **Compressed Storage**: Gzip compression for efficient storage (65%+ size reduction)
 - ⚡ **High Performance**: Optimized for speed with batch processing
-- 🎯 **Perfect Reconstruction**: 100% accuracy on Amharic biblical texts
+- 🎯 **Accurate Reconstruction**: Reliable accuracy on Amharic biblical texts
 - 🔧 **Professional API**: Clean, intuitive interface inspired by Hugging Face
 - 📊 **Production Ready**: Checkpointing, quantization, and comprehensive metrics
+
+### 🔗 Resources
+
+- **Hugging Face Model**: [Nexuss0781/Ethio-BBPE](https://huggingface.co/Nexuss0781/Ethio-BBPE)
+- **Source Code**: [GitHub Repository](https://github.com/nexuss0781/Ethio_BBPE)
+- **Issue Tracker**: [GitHub Issues](https://github.com/nexuss0781/Ethio_BBPE/issues)
 
 ## 🚀 Quick Start
 
@@ -49,8 +55,8 @@ print(f"IDs: {encoded.ids}")
 
 # Decode back to text
 decoded = tokenizer.decode(encoded.ids)
-print(f"Decoded: {decoded}")
-# Output: ሰላም ለኢዮብ ዘኢነበበ ከንቶ ። (100% accurate!)
+print(f\"Decoded: {decoded}\")
+# Output: ሰላም ለኢዮብ ዘኢነበበ ከንቶ ። (accurate reconstruction)
 ```
 
 ### Advanced Usage
@@ -89,7 +95,7 @@ print(f"Vocabulary size: {tokenizer.get_vocab_size()}")
 | **Vocabulary Size** | 16,000 tokens |
 | **Training Data** | 61,769 lines (Synaxarium + Canon Biblical) |
 | **Compression** | Gzip Level 9 (65%+ reduction) |
-| **Reconstruction Accuracy** | 100% |
+| **Reconstruction Accuracy** | High accuracy |
 | **License** | Apache 2.0 |
 
 ### Training Datasets
@@ -182,7 +188,7 @@ print(f"Ge'ez punctuation: {encoded.tokens}")
 # Single token for repeated marks!
 
 decoded = tokenizer.decode(encoded.ids)
-assert decoded == geez_text  # Perfect reconstruction
+assert decoded == geez_text  # Accurate reconstruction
 ```
 
 ### Biblical Text Processing
@@ -196,7 +202,7 @@ biblical_text = """
 
 encoded = tokenizer.encode(biblical_text)
 print(f"Token count: {len(encoded.tokens)}")
-print(f"Perfect reconstruction: {tokenizer.decode(encoded.ids) == biblical_text}")
+print(f"Accurate reconstruction: {tokenizer.decode(encoded.ids) == biblical_text}")
 ```
 
 ## 🤝 Integration
